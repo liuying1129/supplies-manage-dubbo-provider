@@ -8,6 +8,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * springboot运行dubbo优化启动器
@@ -17,6 +18,8 @@ import org.springframework.context.annotation.ImportResource;
  * 右键启动
  */
 @SpringBootApplication
+//不影响默认配置文件的读取
+@PropertySource(value = {"file:/supplies-manage-cfg/jdbc.properties"})
 @ImportResource(value = {"classpath:dubbo-provider.xml"})
 //@DubboComponentScan(basePackages = "com.liu.boot.provider.provider.service")//注解配置方式
 public class ProviderApplication {

@@ -1,10 +1,16 @@
 package com.yklis.suppliesmanage.provider.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.yklis.lisfunction.service.SelectDataSetSQLCmdService;
 import com.yklis.suppliesmanage.inf.SuppliesManageService;
 
 public class SuppliesManageServiceImpl implements SuppliesManageService {
 	
-	@Override
+    @Autowired
+    private SelectDataSetSQLCmdService selectDataSetSQLCmdService;    
+
+    @Override
 	public String queryNoAuditReceiptList() {
 		
         //Map<String, Object> map = new HashMap<>();
