@@ -1,2 +1,2 @@
-java -jar supplies-manage-dubbo-provider-0.0.1-SNAPSHOT.jar
+java -jar supplies-manage-dubbo-provider.jar
 pause

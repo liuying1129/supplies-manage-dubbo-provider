@@ -106,6 +106,10 @@
 	</dependencies>
 	
 	<build>	
+		<!-- 如果不定义finalName，则生成的包名是artifactId-version.war -->
+	    <!-- 定义finalName，则生成的包名是finalName.war -->
+	    <finalName>supplies-manage-dubbo-provider</finalName>
+
 		<plugins>
 			<plugin>
 				<!-- 该插件生成胖jar -->

@@ -16,17 +16,6 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
     @Override
 	public String queryNoAuditReceiptList() {
 		
-        //Map<String, Object> map = new HashMap<>();
-        //map.put("success", true);
-        //map.put("response", list);
-
-    	//return JSON.toJSONStringWithDateFormat(map, "yyyy-MM-dd HH:mm:ss");
-
-		String ss = selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_RK_Fu");
-		//"{\"success\":true,\"response\":[{\"Unid\":123,\"Name\":\"KX21清洗液\"},{\"Unid\":124,\"Name\":\"尿试纸\"}]}";
-		
-		logger.info(ss);
-		return ss;
+    	return selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_RK_Fu");
 	}
-
 }
