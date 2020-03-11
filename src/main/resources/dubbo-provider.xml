@@ -30,7 +30,7 @@
 	<!-- check="false":注册中心ZK未启动,provider仍可启动. 注册中心ZK启动后,provider会自动注册上去-->
 	<!-- 直连模式,register="false",表示不向zk注册(避免不停报注册的错误).直连模式下,zk是否启动都没关系 -->
 	<dubbo:registry address="zookeeper://127.0.0.1:2181" check="false" register="false"/>
-	
+		
 	<!-- XML配置方式begin -->
     <!-- 具体服务接口的实现 -->    	
 	<bean id="suppliesManageServiceImpl" class="com.yklis.suppliesmanage.provider.service.impl.SuppliesManageServiceImpl"/>

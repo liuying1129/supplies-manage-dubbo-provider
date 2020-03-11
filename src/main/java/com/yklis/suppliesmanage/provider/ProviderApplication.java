@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * springboot运行dubbo优化启动器
@@ -18,10 +18,12 @@ import org.springframework.context.annotation.PropertySource;
  * 右键启动
  */
 @SpringBootApplication
-//不影响默认配置文件的读取
-@PropertySource(value = {"file:/supplies-manage-cfg/jdbc.properties"})
-@ImportResource(value = {"classpath:dubbo-provider.xml"})
 //@DubboComponentScan(basePackages = "com.liu.boot.provider.provider.service")//注解配置方式
+@ImportResource(value = {"classpath:dubbo-provider.xml"})
+//<context:component-scan base-package="com.yklis.lisfunction.dao" />
+@ComponentScan(basePackages="com.yklis.lisfunction.dao")
+//<context:component-scan base-package="com.yklis.lisfunction.service.impl" />
+@ComponentScan(basePackages="com.yklis.lisfunction.service.impl")
 public class ProviderApplication {
 
 	@Bean
