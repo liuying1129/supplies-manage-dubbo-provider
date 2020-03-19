@@ -50,4 +50,28 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
     	//logger.info("update SJ_RK_Fu set SJUnid="+receiptEntity.getSjunid()+",Vendor='"+receiptEntity.getVendor()+"',DJH='"+receiptEntity.getDjh()+"',PH='"+receiptEntity.getPh()+"',YXQ="+sqlYxq+",SL="+receiptEntity.getSl()+",DW='"+receiptEntity.getDw()+"',RKRQ='"+receiptEntity.getRkrq()+"' where Unid="+receiptEntity.getUnid());
     	return execSQLCmdService.ExecSQLCmd("update SJ_RK_Fu set SJUnid="+receiptEntity.getSjunid()+",Vendor='"+receiptEntity.getVendor()+"',DJH='"+receiptEntity.getDjh()+"',PH='"+receiptEntity.getPh()+"',YXQ="+sqlYxq+",SL="+receiptEntity.getSl()+",DW='"+receiptEntity.getDw()+"',RKRQ='"+receiptEntity.getRkrq()+"' where Unid="+receiptEntity.getUnid());
     }
+    
+    @Override
+    public String loadSJ_JBXX() {
+    	
+    	return selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_JBXX");
+    }
+
+	@Override
+	public String loadSJ_Pack(String sjunid) {
+		
+    	return selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_Pack where SJUnid="+sjunid);
+	}
+
+	@Override
+	public String queryReceiptList() {
+		
+    	return selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_RK_Fu order by Unid desc");
+	}
+
+	@Override
+	public String audit(String unid) {
+		
+    	return execSQLCmdService.ExecSQLCmd("update SJ_RK_Fu set Auditer='"+"Auditer"+"',Audit_Date=getdate() where Unid="+unid);
+	}
 }
