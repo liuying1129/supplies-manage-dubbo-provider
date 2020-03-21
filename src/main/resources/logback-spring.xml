@@ -21,11 +21,11 @@
     <!-- 按照每天生成日志文件 -->
     <appender name="FILE"  class="ch.qos.logback.core.rolling.RollingFileAppender">
     	<!-- 正在记录的日志文件的路径及文件名 -->
-        <file>${LOG_HOME}/YkSchedule.log</file>
+        <file>${LOG_HOME}/supplies-manage-dubbo-provider.log</file>
         
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">            
             <!-- 日志归档 -->
-            <fileNamePattern>${LOG_HOME}/YkSchedule.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/supplies-manage-dubbo-provider.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>100MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
