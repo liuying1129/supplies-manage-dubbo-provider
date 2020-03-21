@@ -28,7 +28,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
     @Override
 	public String queryNoAuditReceiptList() {
 		
-    	return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,SHR,CONVERT(CHAR(10),RKRQ,121) as RKRQ,Create_Date_Time,Vendor,DJH from SJ_RK_Fu where Audit_Date is null order by Unid desc");
+    	return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,SHR,CONVERT(CHAR(10),RKRQ,121) as RKRQ,Create_Date_Time,Vendor,DJH,Memo from SJ_RK_Fu where Audit_Date is null order by Unid desc");
 	}
     
     @Override
@@ -44,7 +44,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
     	if(null == receiptEntity.getYxq()) {sqlYxq = "null";} else {sqlYxq = "'"+receiptEntity.getYxq()+"'";}
     	
     	//logger.info("insert into SJ_RK_Fu (SJUnid,Vendor,DJH,PH,YXQ,SL,DW,RKRQ) values ('"+receiptEntity.getSjunid()+"','"+receiptEntity.getVendor()+"','"+receiptEntity.getDjh()+"','"+receiptEntity.getPh()+"',"+sqlYxq+","+receiptEntity.getSl()+",'"+receiptEntity.getDw()+"','"+receiptEntity.getRkrq()+"')");
-    	return execSQLCmdService.ExecSQLCmd("insert into SJ_RK_Fu (SJUnid,Vendor,DJH,PH,YXQ,SL,DW,RKRQ) values ('"+receiptEntity.getSjunid()+"','"+receiptEntity.getVendor()+"','"+receiptEntity.getDjh()+"','"+receiptEntity.getPh()+"',"+sqlYxq+","+receiptEntity.getSl()+",'"+receiptEntity.getDw()+"','"+receiptEntity.getRkrq()+"')");
+    	return execSQLCmdService.ExecSQLCmd("insert into SJ_RK_Fu (SJUnid,Vendor,DJH,PH,YXQ,SL,DW,RKRQ,Memo) values ('"+receiptEntity.getSjunid()+"','"+receiptEntity.getVendor()+"','"+receiptEntity.getDjh()+"','"+receiptEntity.getPh()+"',"+sqlYxq+","+receiptEntity.getSl()+",'"+receiptEntity.getDw()+"','"+receiptEntity.getRkrq()+"','"+receiptEntity.getMemo()+"')");
     }
     
     @Override
@@ -54,7 +54,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
     	if(null == receiptEntity.getYxq()) {sqlYxq = "null";} else {sqlYxq = "'"+receiptEntity.getYxq()+"'";}
 
     	//logger.info("update SJ_RK_Fu set SJUnid="+receiptEntity.getSjunid()+",Vendor='"+receiptEntity.getVendor()+"',DJH='"+receiptEntity.getDjh()+"',PH='"+receiptEntity.getPh()+"',YXQ="+sqlYxq+",SL="+receiptEntity.getSl()+",DW='"+receiptEntity.getDw()+"',RKRQ='"+receiptEntity.getRkrq()+"' where Unid="+receiptEntity.getUnid());
-    	return execSQLCmdService.ExecSQLCmd("update SJ_RK_Fu set SJUnid="+receiptEntity.getSjunid()+",Vendor='"+receiptEntity.getVendor()+"',DJH='"+receiptEntity.getDjh()+"',PH='"+receiptEntity.getPh()+"',YXQ="+sqlYxq+",SL="+receiptEntity.getSl()+",DW='"+receiptEntity.getDw()+"',RKRQ='"+receiptEntity.getRkrq()+"' where Unid="+receiptEntity.getUnid()+" and Audit_Date is null");
+    	return execSQLCmdService.ExecSQLCmd("update SJ_RK_Fu set SJUnid="+receiptEntity.getSjunid()+",Vendor='"+receiptEntity.getVendor()+"',DJH='"+receiptEntity.getDjh()+"',PH='"+receiptEntity.getPh()+"',YXQ="+sqlYxq+",SL="+receiptEntity.getSl()+",DW='"+receiptEntity.getDw()+"',RKRQ='"+receiptEntity.getRkrq()+"',Memo='"+receiptEntity.getMemo()+"' where Unid="+receiptEntity.getUnid()+" and Audit_Date is null");
     }
     
     @Override
@@ -93,7 +93,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 			sqlRkrq = " where rkrq>GETDATE()-7 ";
 			break;
 		}
-    	return selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_RK_Fu "+sqlRkrq+" order by Unid desc");
+    	return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,Name,GG,SCCJ,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,SHR,Memo,CONVERT(CHAR(10),RKRQ,121) as RKRQ,Auditer,Audit_Date,Create_Date_Time,Vendor,DJH,Model,ApprovalNo from SJ_RK_Fu "+sqlRkrq+" order by Unid desc");
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	@Override
 	public String queryInventoryList() {
 
-		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_KC");
+		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,SJUnid,RKID,Name,GG,SCCJ,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,SHR,Memo,CONVERT(CHAR(10),RKRQ,121) as RKRQ,Create_Date_Time,GYS,Model,ApprovalNo from SJ_KC");
 	}
 
 	@Override
@@ -195,6 +195,6 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	@Override
 	public String queryOutputList() {
 		
-		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_CK_Fu");
+		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,KCUnid,SJUnid,Name,Model,GG,SCCJ,ApprovalNo,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,RLR,CONVERT(CHAR(10),CKRQ,121) as CKRQ,Create_Date_Time,Vendor,Memo from SJ_CK_Fu");
 	}
 }
