@@ -101,8 +101,14 @@
             <groupId>com.yklis</groupId>
             <artifactId>LisFunction</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>		
-		 		
+        </dependency>
+        
+		<!-- 本地仓库工具库 -->
+        <dependency>
+            <groupId>com.yklis</groupId>
+            <artifactId>LYFunction</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>		 		
 	</dependencies>
 	
 	<build>	

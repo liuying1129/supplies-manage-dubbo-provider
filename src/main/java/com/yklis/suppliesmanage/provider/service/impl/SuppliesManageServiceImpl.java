@@ -1,19 +1,24 @@
 package com.yklis.suppliesmanage.provider.service.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yklis.lisfunction.service.ExecSQLCmdService;
+import com.yklis.lisfunction.service.ScalarSQLCmdService;
 import com.yklis.lisfunction.service.SelectDataSetSQLCmdService;
 import com.yklis.suppliesmanage.entity.ReceiptEntity;
 import com.yklis.suppliesmanage.inf.SuppliesManageService;
+import com.yklis.suppliesmanage.provider.util.Constants;
+import com.yklis.suppliesmanage.provider.util.UnitsConverter;
+import com.yklis.util.CommFunction;
 
 public class SuppliesManageServiceImpl implements SuppliesManageService {
 	
@@ -24,6 +29,15 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
     
     @Autowired
     private ExecSQLCmdService execSQLCmdService;
+    
+    @Autowired
+    private ScalarSQLCmdService scalarSQLCmdService;
+    
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+	
+	@Autowired
+	private UnitsConverter unitsConverter;
 
     @Override
 	public String queryNoAuditReceiptList() {
@@ -111,20 +125,27 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	@Override
 	public String outputInventory(String unid,String rlr,int sl,String dw,String ckrq,String memo) {
 		
-		String ss11 = selectDataSetSQLCmdService.selectDataSetSQLCmd("select * from SJ_KC where unid="+unid);
-        JSONObject jso11=JSON.parseObject(ss11);//json字符串转换成JSONObject(JSON对象)
-        
-        boolean bb11 = jso11.getBooleanValue("success");
-        if(!bb11) return ss11;
-        
-        JSONArray jsarr11=jso11.getJSONArray("response");//JSONObject取得response对应的JSONArray(JSON数组)
-        if(jsarr11.size()!=1) {
-        	
-        	logger.error("找到多条库存记录,出库失败!");
-        	
+		List<Map<String, Object>> list;
+    	try{
+    		list = jdbcTemplate.queryForList("select * from SJ_KC where unid="+unid);
+    	}catch(Exception e){
+                
             Map<String, Object> mapResponse = new HashMap<>();
             mapResponse.put("errorCode", -123);
-            mapResponse.put("errorMsg", "找到多条库存记录,出库失败!");
+            mapResponse.put("errorMsg", "方法outputInventory,查询库存出错,出库失败!");
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", false);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);
+    	}
+        
+        if(null==list||(list.size()!=1)) {
+        	        	
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("errorCode", -123);
+            mapResponse.put("errorMsg", "没找到库存或找到多条库存记录,出库失败!");
             
             Map<String, Object> map = new HashMap<>();
             map.put("success", false);
@@ -132,54 +153,97 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
             
             return JSON.toJSONString(map);
         }
-                    
-        JSONObject jso111 = jsarr11.getJSONObject(0);
+                            
+        int kcsSJUnid = (int) list.get(0).get("SJUnid");
+        String kcsSJID = null==list.get(0).get("SJID")?"":list.get(0).get("SJID").toString();
+        String kcsName = null==list.get(0).get("Name")?"":list.get(0).get("Name").toString();
+        String kcsModel = null==list.get(0).get("Model")?"":list.get(0).get("Model").toString();
+        String kcsGG = null==list.get(0).get("GG")?"":list.get(0).get("GG").toString();
+        String kcsSCCJ = null==list.get(0).get("SCCJ")?"":list.get(0).get("SCCJ").toString();
+        String kcsApprovalNo = null==list.get(0).get("ApprovalNo")?"":list.get(0).get("ApprovalNo").toString();
+        String kcsPH = null==list.get(0).get("PH")?"":list.get(0).get("PH").toString();
+        String kcsYXQ = null==list.get(0).get("YXQ")?"null":"'"+list.get(0).get("YXQ").toString()+"'";
+        String kcsVendor = null==list.get(0).get("Vendor")?"":list.get(0).get("Vendor").toString();
+        String kcsDW = null==list.get(0).get("DW")?"":list.get(0).get("DW").toString();
+        int kcsSL = (int) list.get(0).get("SL");
         
-        int kcsSJUnid = jso111.getIntValue("SJUnid");
-        String kcsSJID = null==jso111.get("SJID")?"":jso111.get("SJID").toString();
-        String kcsName = null==jso111.get("Name")?"":jso111.get("Name").toString();
-        String kcsModel = null==jso111.get("Model")?"":jso111.get("Model").toString();
-        String kcsGG = null==jso111.get("GG")?"":jso111.get("GG").toString();
-        String kcsSCCJ = null==jso111.get("SCCJ")?"":jso111.get("SCCJ").toString();
-        String kcsApprovalNo = null==jso111.get("ApprovalNo")?"":jso111.get("ApprovalNo").toString();
-        String kcsPH = null==jso111.get("PH")?"":jso111.get("PH").toString();
-        String kcsYXQ = null==jso111.get("YXQ")?"null":"'"+jso111.get("YXQ").toString()+"'";
-        String kcsVendor = null==jso111.get("Vendor")?"":jso111.get("Vendor").toString();
-        String kcsDW = null==jso111.get("DW")?"":jso111.get("DW").toString();
-        int kcsSL = jso111.getIntValue("SL");
-        
-        if(kcsDW.equals(dw)) {//出库单位与库存单位一致
+        int dwRate = unitsConverter.UnitsConverterMethod(kcsSJUnid,kcsDW,dw);
+        if(dwRate == 0) {
         	
-        	if(kcsSL<sl) {
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("errorCode", -123);
+            mapResponse.put("errorMsg", "没找到库存单位与出库单位的转换比例,出库失败!");
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", false);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);
+        }
+                
+        if(
+        ((dwRate>0)&&(kcsSL*dwRate<sl))||
+        ((dwRate<0)&&(kcsSL<sl*Math.abs(dwRate)))
+        ) {       	
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("errorCode", -123);
+            mapResponse.put("errorMsg", "库存不足,出库失败!");
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", false);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);        
+        }
+        
+        if(dwRate>0) {        	        	
         		
+            try{
+                jdbcTemplate.update("update SJ_KC set DW='"+dw+"',SL=SL*"+dwRate+"-"+ sl +" where unid="+unid);                            
+            }catch(Exception e){
+                    
                 Map<String, Object> mapResponse = new HashMap<>();
-                mapResponse.put("errorCode", -123);
-                mapResponse.put("errorMsg", "库存不够,出库失败!");
+                mapResponse.put("errorCode", -223);
+                mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
                 
                 Map<String, Object> map = new HashMap<>();
                 map.put("success", false);
                 map.put("response", mapResponse);
                 
                 return JSON.toJSONString(map);
-        	}
-        	
-    		execSQLCmdService.ExecSQLCmd("update SJ_KC set SL=SL-"+sl+" where unid="+unid);
+            }        	
         }else {
         	
+            try{
+                jdbcTemplate.update("update SJ_KC set SL=SL-"+sl*Math.abs(dwRate)+" where unid="+unid);                            
+            }catch(Exception e){
+                    
+                Map<String, Object> mapResponse = new HashMap<>();
+                mapResponse.put("errorCode", -223);
+                mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
+                
+                Map<String, Object> map = new HashMap<>();
+                map.put("success", false);
+                map.put("response", mapResponse);
+                
+                return JSON.toJSONString(map);
+            }        	
+        }                
+        		
+        try{
+            jdbcTemplate.update("insert into SJ_CK_Fu (KCUnid,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,PH,YXQ,Vendor,RLR,CKRQ,SL,DW,Memo) values ("+unid+","+kcsSJUnid+",'"+kcsSJID+"','"+kcsName+"','"+kcsModel+"','"+kcsGG+"','"+kcsSCCJ+"','"+kcsApprovalNo+"','"+kcsPH+"',"+kcsYXQ+",'"+kcsVendor+"','"+rlr+"','"+ckrq+"',"+sl+",'"+dw+"','"+memo+"')");
+        }catch(Exception e){
+                
             Map<String, Object> mapResponse = new HashMap<>();
-            mapResponse.put("errorCode", -123);
-            mapResponse.put("errorMsg", "出库单位与库存单位不同,出库失败!");
+            mapResponse.put("errorCode", -223);
+            mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
             
             Map<String, Object> map = new HashMap<>();
             map.put("success", false);
             map.put("response", mapResponse);
             
             return JSON.toJSONString(map);
-        }
-        		
-		
-		execSQLCmdService.ExecSQLCmd("insert into SJ_CK_Fu (KCUnid,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,PH,YXQ,Vendor,RLR,CKRQ,SL,DW,Memo) values ("+unid+","+kcsSJUnid+",'"+kcsSJID+"','"+kcsName+"','"+kcsModel+"','"+kcsGG+"','"+kcsSCCJ+"','"+kcsApprovalNo+"','"+kcsPH+"',"+kcsYXQ+",'"+kcsVendor+"','"+rlr+"','"+ckrq+"',"+sl+",'"+dw+"','"+memo+"')");
-		
+        }		
 		
         Map<String, Object> mapResponse = new HashMap<>();
         mapResponse.put("id", -1);
@@ -196,5 +260,28 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	public String queryOutputList() {
 		
 		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,KCUnid,SJUnid,Name,Model,GG,SCCJ,ApprovalNo,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,RLR,CONVERT(CHAR(10),CKRQ,121) as CKRQ,Create_Date_Time,Vendor,Memo from SJ_CK_Fu");
+	}
+
+	@Override
+	public String querySqsydw() {
+		
+        //获取授权使用单位
+        String s1 = scalarSQLCmdService.ScalarSQLCmd("select Name from CommCode where TypeName='系统代码' and ReMark='授权使用单位' ");
+        //{"success":true,"response":{"result":""}}
+                
+        JSONObject jso=JSON.parseObject(s1);//json字符串转换成JSONObject(JSON对象)
+        boolean bb1 = jso.getBooleanValue("success");
+        
+        String s2 = null;
+        
+        if(bb1){
+            
+            JSONObject jso2=jso.getJSONObject("response");
+            String result =jso2.getString("result");
+            
+            s2 = CommFunction.deCryptStr(result, Constants.DES_KEY);            
+        }
+        
+        return s2;
 	}
 }
