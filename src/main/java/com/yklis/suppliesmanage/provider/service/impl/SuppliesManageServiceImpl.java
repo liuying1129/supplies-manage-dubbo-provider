@@ -14,10 +14,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.yklis.lisfunction.service.ExecSQLCmdService;
 import com.yklis.lisfunction.service.ScalarSQLCmdService;
 import com.yklis.lisfunction.service.SelectDataSetSQLCmdService;
+import com.yklis.lisfunction.service.WorkerService;
 import com.yklis.suppliesmanage.entity.ReceiptEntity;
 import com.yklis.suppliesmanage.inf.SuppliesManageService;
 import com.yklis.suppliesmanage.provider.util.Constants;
 import com.yklis.suppliesmanage.provider.util.UnitsConverter;
+import com.yklis.lisfunction.entity.WorkerEntity;
 import com.yklis.util.CommFunction;
 
 public class SuppliesManageServiceImpl implements SuppliesManageService {
@@ -38,6 +40,9 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	
 	@Autowired
 	private UnitsConverter unitsConverter;
+	
+    @Autowired
+    private WorkerService workerService;
 
     @Override
 	public String queryNoAuditReceiptList() {
@@ -283,5 +288,27 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
         }
         
         return s2;
+	}
+
+	@Override
+	public boolean login(String account,String password) {
+		
+        //account为null时Mybatis并不会作为空字符串""处理
+        String tmpAccount = account;
+        if(null == account){
+            tmpAccount = "";
+        }
+        
+        //passWord为null时Mybatis并不会作为空字符串""处理
+    	String tmpPassword = password;
+        if(null == password){
+        	tmpPassword = "";
+        }
+        
+        List<WorkerEntity> workerList = workerService.ifCanLogin(tmpAccount, tmpPassword);
+
+        if((workerList == null)||(workerList.isEmpty())) return false;
+
+		return true;
 	}
 }

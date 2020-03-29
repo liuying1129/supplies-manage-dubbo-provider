@@ -27,6 +27,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  *
  */
 @Configuration
+//不影响默认配置文件的读取
 @PropertySource(value = {"file:/supplies-manage-cfg/jdbc.properties"})
 public class DataSourceConfig {
 	
