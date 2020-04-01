@@ -62,8 +62,8 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
     	String sqlYxq;
     	if(null == receiptEntity.getYxq()) {sqlYxq = "null";} else {sqlYxq = "'"+receiptEntity.getYxq()+"'";}
     	
-    	//logger.info("insert into SJ_RK_Fu (SJUnid,Vendor,DJH,PH,YXQ,SL,DW,RKRQ) values ('"+receiptEntity.getSjunid()+"','"+receiptEntity.getVendor()+"','"+receiptEntity.getDjh()+"','"+receiptEntity.getPh()+"',"+sqlYxq+","+receiptEntity.getSl()+",'"+receiptEntity.getDw()+"','"+receiptEntity.getRkrq()+"')");
-    	return execSQLCmdService.ExecSQLCmd("insert into SJ_RK_Fu (SJUnid,Vendor,DJH,PH,YXQ,SL,DW,RKRQ,Memo) values ('"+receiptEntity.getSjunid()+"','"+receiptEntity.getVendor()+"','"+receiptEntity.getDjh()+"','"+receiptEntity.getPh()+"',"+sqlYxq+","+receiptEntity.getSl()+",'"+receiptEntity.getDw()+"','"+receiptEntity.getRkrq()+"','"+receiptEntity.getMemo()+"')");
+    	//logger.info("插入SQL:"+"insert into SJ_RK_Fu (SJUnid,Vendor,DJH,PH,YXQ,SL,DW,SHR,RKRQ,Memo) values ('"+receiptEntity.getSjunid()+"','"+receiptEntity.getVendor()+"','"+receiptEntity.getDjh()+"','"+receiptEntity.getPh()+"',"+sqlYxq+","+receiptEntity.getSl()+",'"+receiptEntity.getDw()+"','"+receiptEntity.getShr()+"','"+receiptEntity.getRkrq()+"','"+receiptEntity.getMemo()+"')");
+    	return execSQLCmdService.ExecSQLCmd("insert into SJ_RK_Fu (SJUnid,Vendor,DJH,PH,YXQ,SL,DW,SHR,RKRQ,Memo) values ('"+receiptEntity.getSjunid()+"','"+receiptEntity.getVendor()+"','"+receiptEntity.getDjh()+"','"+receiptEntity.getPh()+"',"+sqlYxq+","+receiptEntity.getSl()+",'"+receiptEntity.getDw()+"','"+receiptEntity.getShr()+"','"+receiptEntity.getRkrq()+"','"+receiptEntity.getMemo()+"')");
     }
     
     @Override
@@ -116,9 +116,9 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	}
 
 	@Override
-	public String audit(String unid) {
+	public String audit(String unid,String userName) {
 		
-    	return execSQLCmdService.ExecSQLCmd("update SJ_RK_Fu set Auditer='"+"Auditer"+"',Audit_Date=getdate() where Unid="+unid+" and Audit_Date is null");
+    	return execSQLCmdService.ExecSQLCmd("update SJ_RK_Fu set Auditer='"+userName+"',Audit_Date=getdate() where Unid="+unid+" and Audit_Date is null");
 	}
 
 	@Override
@@ -128,7 +128,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	}
 
 	@Override
-	public String outputInventory(String unid,String rlr,int sl,String dw,String ckrq,String memo) {
+	public String outputInventory(String unid,String rlr,int sl,String dw,String ckrq,String memo,String shr) {
 		
 		List<Map<String, Object>> list;
     	try{
@@ -236,7 +236,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
         }                
         		
         try{
-            jdbcTemplate.update("insert into SJ_CK_Fu (KCUnid,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,PH,YXQ,Vendor,RLR,CKRQ,SL,DW,Memo) values ("+unid+","+kcsSJUnid+",'"+kcsSJID+"','"+kcsName+"','"+kcsModel+"','"+kcsGG+"','"+kcsSCCJ+"','"+kcsApprovalNo+"','"+kcsPH+"',"+kcsYXQ+",'"+kcsVendor+"','"+rlr+"','"+ckrq+"',"+sl+",'"+dw+"','"+memo+"')");
+            jdbcTemplate.update("insert into SJ_CK_Fu (KCUnid,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,PH,YXQ,Vendor,RLR,CKRQ,SL,DW,Memo,SHR) values ("+unid+","+kcsSJUnid+",'"+kcsSJID+"','"+kcsName+"','"+kcsModel+"','"+kcsGG+"','"+kcsSCCJ+"','"+kcsApprovalNo+"','"+kcsPH+"',"+kcsYXQ+",'"+kcsVendor+"','"+rlr+"','"+ckrq+"',"+sl+",'"+dw+"','"+memo+"','"+shr+"')");
         }catch(Exception e){
                 
             Map<String, Object> mapResponse = new HashMap<>();
@@ -262,9 +262,28 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	}
 
 	@Override
-	public String queryOutputList() {
+	public String queryOutputList(String ckrqRadioValue) {
 		
-		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,KCUnid,SJUnid,Name,Model,GG,SCCJ,ApprovalNo,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,RLR,CONVERT(CHAR(10),CKRQ,121) as CKRQ,Create_Date_Time,Vendor,Memo from SJ_CK_Fu");
+		String sqlCkrq;
+		switch(ckrqRadioValue) {
+		case "0":
+			sqlCkrq = " where ckrq>GETDATE()-7 ";
+			break;
+		case "1":
+			sqlCkrq = " where ckrq>GETDATE()-30 ";
+			break;
+		case "2":
+			sqlCkrq = " where ckrq>GETDATE()-90 ";
+			break;
+		case "3":
+			sqlCkrq = "";
+			break;
+		default:
+			sqlCkrq = " where ckrq>GETDATE()-7 ";
+			break;
+		}
+
+		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,KCUnid,SJUnid,Name,Model,GG,SCCJ,ApprovalNo,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,RLR,SHR,CONVERT(CHAR(10),CKRQ,121) as CKRQ,Create_Date_Time,Vendor,Memo from SJ_CK_Fu "+sqlCkrq+" order by Unid desc");
 	}
 
 	@Override
@@ -310,5 +329,25 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
         if((workerList == null)||(workerList.isEmpty())) return false;
 
 		return true;
+	}
+
+	@Override
+	public String queryUsernameFromUserid(String account) {
+    	
+		if(null==account)return null;
+		
+    	try{
+    		//sql要求：
+    		//1、有且仅有一条记录
+    		//2、有且仅有一个字段
+    		//3、字段在DB中的类型不限
+    		String s = jdbcTemplate.queryForObject("select top 1 name from worker where id='"+account+"'",String.class);
+	        
+	    	return s;
+
+    	}catch(Exception e){
+                            
+	    	return null;
+    	}
 	}
 }
