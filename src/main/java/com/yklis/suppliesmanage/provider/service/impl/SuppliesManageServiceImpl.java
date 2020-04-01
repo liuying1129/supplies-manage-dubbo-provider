@@ -350,4 +350,94 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	    	return null;
     	}
 	}
+
+	@Override
+	public String inventorySplit(String unid) {
+		
+		List<Map<String, Object>> list;
+    	try{
+    		list = jdbcTemplate.queryForList("select * from SJ_KC where unid="+unid);
+    	}catch(Exception e){
+                
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("errorCode", -123);
+            mapResponse.put("errorMsg", "方法inventorySplit,查询库存出错,出库失败!");
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", false);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);
+    	}
+        
+        if(null==list||(list.size()!=1)) {
+        	        	
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("errorCode", -123);
+            mapResponse.put("errorMsg", "没找到库存或找到多条库存记录,出库失败!");
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", false);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);
+        }
+        
+        int kcsSL = (int) list.get(0).get("SL");
+        if(kcsSL<=1) {
+        	
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("errorCode", -123);
+            mapResponse.put("errorMsg", "库存数量小于或等于1,不能拆分!");
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", false);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);
+        }
+        
+        try{
+            jdbcTemplate.update("update SJ_KC set SL=SL-1 where unid="+unid);                            
+        }catch(Exception e){
+                
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("errorCode", -223);
+            mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", false);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);
+        }
+        
+        String ss1 = "insert into SJ_KC (RKID,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,GYS,PH,YXQ,SL,DW,RKRQ,SHR,Memo) " + 
+        		               "  select RKID,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,GYS,PH,YXQ, 1,DW,RKRQ,SHR,Memo from SJ_KC where unid="+unid;
+       
+        try{
+            jdbcTemplate.update(ss1);
+        }catch(Exception e){
+                
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("errorCode", -223);
+            mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", false);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);
+        }
+        
+        Map<String, Object> mapResponse = new HashMap<>();
+        mapResponse.put("id", -1);
+        mapResponse.put("msg", "拆分成功");
+        
+        Map<String, Object> map = new HashMap<>();
+        map.put("success", true);
+        map.put("response", mapResponse);
+        
+        return JSON.toJSONString(map);
+	}
 }
