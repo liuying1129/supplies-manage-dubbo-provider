@@ -436,4 +436,19 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
             return JSON.toJSONString(map);        	
         }
 	}
+
+	@Override
+	public boolean modifyPwd(String account, String newPwd) {
+		
+        try{
+            jdbcTemplate.update("update worker set passwd='"+newPwd+"' where id='"+account+"' ");
+            
+            return true;                            
+        }catch(Exception e){
+                
+            logger.error("方法modifyPwd的sql执行出错:"+e.toString());
+                        
+            return false;
+        }
+	}
 }
