@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -43,6 +46,9 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	
     @Autowired
     private WorkerService workerService;
+    
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @Override
 	public String queryNoAuditReceiptList() {
@@ -201,64 +207,51 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
             return JSON.toJSONString(map);        
         }
         
-        if(dwRate>0) {        	        	
-        		
-            try{
-                jdbcTemplate.update("update SJ_KC set DW='"+dw+"',SL=SL*"+dwRate+"-"+ sl +" where unid="+unid);                            
-            }catch(Exception e){
-                    
-                Map<String, Object> mapResponse = new HashMap<>();
-                mapResponse.put("errorCode", -223);
-                mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
-                
-                Map<String, Object> map = new HashMap<>();
-                map.put("success", false);
-                map.put("response", mapResponse);
-                
-                return JSON.toJSONString(map);
-            }        	
+        //事务.具有【原子性】.即要么一起成功,要么一起失败
+        boolean b11 = (boolean) transactionTemplate.execute(new TransactionCallback<Object>() {
+        	
+            @Override
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+            	
+                try {
+	                if(dwRate>0) {
+	                	jdbcTemplate.update("update SJ_KC set DW='"+dw+"',SL=SL*"+dwRate+"-"+ sl +" where unid="+unid);                            
+	                }else {
+	                	jdbcTemplate.update("update SJ_KC set SL=SL-"+sl*Math.abs(dwRate)+" where unid="+unid);                            
+	                }
+	                jdbcTemplate.update("insert into SJ_CK_Fu (KCUnid,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,PH,YXQ,Vendor,RLR,CKRQ,SL,DW,Memo,SHR) values ("+unid+","+kcsSJUnid+",'"+kcsSJID+"','"+kcsName+"','"+kcsModel+"','"+kcsGG+"','"+kcsSCCJ+"','"+kcsApprovalNo+"','"+kcsPH+"',"+kcsYXQ+",'"+kcsVendor+"','"+rlr+"','"+ckrq+"',"+sl+",'"+dw+"','"+memo+"','"+shr+"')");
+                } catch (Exception e) {                	
+                    transactionStatus.setRollbackOnly();//回滚
+                    logger.error("sql执行出错,事务回滚:"+e.toString());                    
+                    return false;
+                }
+                return true;
+            }
+        });
+        
+        if(b11) {
+            
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse.put("id", -1);
+            mapResponse.put("msg", "出库成功");
+            
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", true);
+            map.put("response", mapResponse);
+            
+            return JSON.toJSONString(map);
         }else {
         	
-            try{
-                jdbcTemplate.update("update SJ_KC set SL=SL-"+sl*Math.abs(dwRate)+" where unid="+unid);                            
-            }catch(Exception e){
-                    
-                Map<String, Object> mapResponse = new HashMap<>();
-                mapResponse.put("errorCode", -223);
-                mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
-                
-                Map<String, Object> map = new HashMap<>();
-                map.put("success", false);
-                map.put("response", mapResponse);
-                
-                return JSON.toJSONString(map);
-            }        	
-        }                
-        		
-        try{
-            jdbcTemplate.update("insert into SJ_CK_Fu (KCUnid,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,PH,YXQ,Vendor,RLR,CKRQ,SL,DW,Memo,SHR) values ("+unid+","+kcsSJUnid+",'"+kcsSJID+"','"+kcsName+"','"+kcsModel+"','"+kcsGG+"','"+kcsSCCJ+"','"+kcsApprovalNo+"','"+kcsPH+"',"+kcsYXQ+",'"+kcsVendor+"','"+rlr+"','"+ckrq+"',"+sl+",'"+dw+"','"+memo+"','"+shr+"')");
-        }catch(Exception e){
-                
             Map<String, Object> mapResponse = new HashMap<>();
             mapResponse.put("errorCode", -223);
-            mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
+            mapResponse.put("errorMsg", "事务回滚,出库失败!");
             
             Map<String, Object> map = new HashMap<>();
             map.put("success", false);
             map.put("response", mapResponse);
             
-            return JSON.toJSONString(map);
-        }		
-		
-        Map<String, Object> mapResponse = new HashMap<>();
-        mapResponse.put("id", -1);
-        mapResponse.put("msg", "出库成功");
-        
-        Map<String, Object> map = new HashMap<>();
-        map.put("success", true);
-        map.put("response", mapResponse);
-        
-        return JSON.toJSONString(map);
+            return JSON.toJSONString(map);        	
+        }
 	}
 
 	@Override
@@ -396,48 +389,51 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
             
             return JSON.toJSONString(map);
         }
+
+        String sql11 = "update SJ_KC set SL=SL-1 where unid="+unid;
+        String sql22 = "insert into SJ_KC (RKID,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,GYS,PH,YXQ,SL,DW,RKRQ,SHR,Memo) " + 
+	                             "  select RKID,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,GYS,PH,YXQ, 1,DW,RKRQ,SHR,Memo from SJ_KC where unid="+unid;
+
+        //事务.具有【原子性】.即要么一起成功,要么一起失败
+        boolean b11 = (boolean) transactionTemplate.execute(new TransactionCallback<Object>() {
+        	
+            @Override
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+            	
+                try {                	
+                	jdbcTemplate.update(sql11);
+                	jdbcTemplate.update(sql22);                	                    
+                } catch (Exception e) {                	
+                    transactionStatus.setRollbackOnly();//回滚
+                    logger.error("sql执行出错,事务回滚:"+e.toString());                    
+                    return false;
+                }
+                return true;
+            }
+        });
         
-        try{
-            jdbcTemplate.update("update SJ_KC set SL=SL-1 where unid="+unid);                            
-        }catch(Exception e){
-                
+        if(b11) {
+        
+	        Map<String, Object> mapResponse = new HashMap<>();
+	        mapResponse.put("id", -1);
+	        mapResponse.put("msg", "拆分成功");
+	        
+	        Map<String, Object> map = new HashMap<>();
+	        map.put("success", true);
+	        map.put("response", mapResponse);
+        
+	        return JSON.toJSONString(map);
+        }else {
+        	
             Map<String, Object> mapResponse = new HashMap<>();
             mapResponse.put("errorCode", -223);
-            mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
+            mapResponse.put("errorMsg", "事务回滚,拆分失败");
             
             Map<String, Object> map = new HashMap<>();
             map.put("success", false);
             map.put("response", mapResponse);
             
-            return JSON.toJSONString(map);
+            return JSON.toJSONString(map);        	
         }
-        
-        String ss1 = "insert into SJ_KC (RKID,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,GYS,PH,YXQ,SL,DW,RKRQ,SHR,Memo) " + 
-        		               "  select RKID,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,GYS,PH,YXQ, 1,DW,RKRQ,SHR,Memo from SJ_KC where unid="+unid;
-       
-        try{
-            jdbcTemplate.update(ss1);
-        }catch(Exception e){
-                
-            Map<String, Object> mapResponse = new HashMap<>();
-            mapResponse.put("errorCode", -223);
-            mapResponse.put("errorMsg", "sql执行出错:"+e.toString());
-            
-            Map<String, Object> map = new HashMap<>();
-            map.put("success", false);
-            map.put("response", mapResponse);
-            
-            return JSON.toJSONString(map);
-        }
-        
-        Map<String, Object> mapResponse = new HashMap<>();
-        mapResponse.put("id", -1);
-        mapResponse.put("msg", "拆分成功");
-        
-        Map<String, Object> map = new HashMap<>();
-        map.put("success", true);
-        map.put("response", mapResponse);
-        
-        return JSON.toJSONString(map);
 	}
 }

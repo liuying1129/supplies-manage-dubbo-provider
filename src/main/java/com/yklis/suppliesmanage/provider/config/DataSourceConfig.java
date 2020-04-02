@@ -4,28 +4,16 @@ import java.beans.PropertyVetoException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-/**
- *   <bean id="dataSource_master" class="com.mchange.v2.c3p0.ComboPooledDataSource">
- *       <property name="driverClass" value="${jdbc.driverClass}"></property>
- *       <property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
- *       <property name="user" value="${jdbc.user}"></property>
- *       <property name="password" value="${jdbc.password}"></property>
- *       <property name="initialPoolSize" value="${jdbc.pool.initialPoolSize}"></property>
- *       <property name="maxIdleTime" value="${jdbc.pool.maxIdleTime}"></property>
- *       <property name="maxPoolSize" value="${jdbc.pool.maxPoolSize}"></property>
- *       <property name="minPoolSize" value="${jdbc.pool.minPoolSize}"></property>
- *       <property name="checkoutTimeout" value="${jdbc.pool.checkoutTimeout}"></property>
- *   </bean>
- * @author liuyi
- *
- */
 @Configuration
 //不影响默认配置文件的读取
 @PropertySource(value = {"file:/supplies-manage-cfg/jdbc.properties"})
@@ -53,6 +41,21 @@ public class DataSourceConfig {
     @Value("${jdbc.pool.checkoutTimeout}")
     private int checkoutTimeout;
 	
+    /**
+     *   <bean id="dataSource_master" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+     *       <property name="driverClass" value="${jdbc.driverClass}"></property>
+     *       <property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+     *       <property name="user" value="${jdbc.user}"></property>
+     *       <property name="password" value="${jdbc.password}"></property>
+     *       <property name="initialPoolSize" value="${jdbc.pool.initialPoolSize}"></property>
+     *       <property name="maxIdleTime" value="${jdbc.pool.maxIdleTime}"></property>
+     *       <property name="maxPoolSize" value="${jdbc.pool.maxPoolSize}"></property>
+     *       <property name="minPoolSize" value="${jdbc.pool.minPoolSize}"></property>
+     *       <property name="checkoutTimeout" value="${jdbc.pool.checkoutTimeout}"></property>
+     *   </bean>
+     * 
+     *
+     */
 	@Bean
     public ComboPooledDataSource dataSource(){
 		
@@ -88,4 +91,27 @@ public class DataSourceConfig {
 		
 		return dataSource;		
 	}
+	
+
+    /**
+              * 装配事务管理器
+     * 
+     * <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+     *   <property name="dataSource" ref="dataSource_master" />
+     * </bean>
+     */
+    @Bean
+    public DataSourceTransactionManager transactionManager(@Autowired ComboPooledDataSource dataSource) {
+    	
+        return new DataSourceTransactionManager(dataSource);
+    }
+    
+    /**
+     * JDBC事务操作配置
+     */
+    @Bean
+    public TransactionTemplate transactionTemplate(@Autowired DataSourceTransactionManager transactionManager){
+    	
+        return new TransactionTemplate(transactionManager);
+    }
 }
