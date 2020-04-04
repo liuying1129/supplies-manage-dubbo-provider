@@ -130,7 +130,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	@Override
 	public String queryInventoryList() {
 
-		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,SJUnid,RKID,Name,GG,SCCJ,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,SHR,Memo,CONVERT(CHAR(10),RKRQ,121) as RKRQ,Create_Date_Time,GYS,Model,ApprovalNo from SJ_KC");
+		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,SJUnid,RKID,Name,GG,SCCJ,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,SHR,Memo,CONVERT(CHAR(10),RKRQ,121) as RKRQ,Create_Date_Time,GYS,Model,ApprovalNo from SJ_KC order by SJUnid");
 	}
 
 	@Override
