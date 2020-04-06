@@ -226,6 +226,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
             public Object doInTransaction(TransactionStatus transactionStatus) {
             	
                 try {
+                	//经测试(执行第1句后sleep并中止执行)，所有SQL的数据不会提交
 	                if(dwRate>0) {
 	                	jdbcTemplate.update("update SJ_KC set DW='"+dw+"',SL=SL*"+dwRate+"-"+ sl +" where unid="+unid);                            
 	                }else {
@@ -412,7 +413,8 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
             @Override
             public Object doInTransaction(TransactionStatus transactionStatus) {
             	
-                try {                	
+                try {
+                	//经测试(执行第1句后sleep并中止执行)，所有SQL的数据不会提交
                 	jdbcTemplate.update(sql11);
                 	jdbcTemplate.update(sql22);                	                    
                 } catch (Exception e) {                	
