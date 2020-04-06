@@ -128,9 +128,21 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	}
 
 	@Override
-	public String queryInventoryList() {
+	public String queryInventoryList(String hcName,String vendor) {
+		
+		String sqlHcName = "";
+		if((null!=hcName)&&(!"".equals(hcName))) {
+			
+			sqlHcName=" and Name like '%"+hcName+"%' ";
+		}
 
-		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,SJUnid,RKID,Name,GG,SCCJ,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,SHR,Memo,CONVERT(CHAR(10),RKRQ,121) as RKRQ,Create_Date_Time,GYS,Model,ApprovalNo from SJ_KC order by SJUnid");
+		String sqlVendor = "";
+		if((null!=vendor)&&(!"".equals(vendor))) {
+			
+			sqlVendor=" and GYS like '%"+vendor+"%' ";
+		}
+		
+		return selectDataSetSQLCmdService.selectDataSetSQLCmd("select Unid,SJUnid,RKID,Name,GG,SCCJ,PH,CONVERT(CHAR(10),YXQ,121) as YXQ,SL,DW,SHR,Memo,CONVERT(CHAR(10),RKRQ,121) as RKRQ,Create_Date_Time,GYS,Model,ApprovalNo from SJ_KC where 1=1 "+sqlHcName+sqlVendor+" order by SJUnid");
 	}
 
 	@Override
