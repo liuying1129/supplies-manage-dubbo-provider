@@ -465,4 +465,21 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
             return false;
         }
 	}
+
+	@Override
+	public String queryWebSocketNewValueUrl() {
+		
+    	try{
+    		//sql要求：
+    		//1、有且仅有一条记录
+    		//2、有且仅有一个字段
+    		//3、字段在DB中的类型不限
+    		return jdbcTemplate.queryForObject("select Name from CommCode where TypeName='系统代码' and Remark='Schedule WebSocket服务地址' ",String.class);                
+
+    	}catch(Exception e){
+    		
+    		logger.error("方法queryWebSocketNewValueUrl的sql执行出错:"+e.toString());           
+	    	return null;
+    	}
+	}
 }
