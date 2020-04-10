@@ -474,7 +474,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
     		//1、有且仅有一条记录
     		//2、有且仅有一个字段
     		//3、字段在DB中的类型不限
-    		return jdbcTemplate.queryForObject("select Name from CommCode where TypeName='系统代码' and Remark='Schedule WebSocket服务地址' ",String.class);                
+    		return jdbcTemplate.queryForObject("select Name from CommCode WITH(NOLOCK) where TypeName='系统代码' and Remark='Schedule WebSocket服务地址' ",String.class);                
 
     	}catch(Exception e){
     		
