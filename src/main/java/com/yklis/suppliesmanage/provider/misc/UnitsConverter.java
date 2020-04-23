@@ -1,4 +1,4 @@
-package com.yklis.suppliesmanage.provider.util;
+package com.yklis.suppliesmanage.provider.misc;
 
 import java.util.List;
 import java.util.Map;

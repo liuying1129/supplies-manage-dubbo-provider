@@ -21,7 +21,7 @@ import com.yklis.lisfunction.service.WorkerService;
 import com.yklis.suppliesmanage.entity.ReceiptEntity;
 import com.yklis.suppliesmanage.inf.SuppliesManageService;
 import com.yklis.suppliesmanage.provider.util.Constants;
-import com.yklis.suppliesmanage.provider.util.UnitsConverter;
+import com.yklis.suppliesmanage.provider.misc.UnitsConverter;
 import com.yklis.lisfunction.entity.WorkerEntity;
 import com.yklis.util.CommFunction;
 

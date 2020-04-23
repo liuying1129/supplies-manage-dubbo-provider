@@ -8,6 +8,16 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
+	<!-- 该部件maven独有,Gradle没有
+	表示当前pom文件继承自spring-boot-starter-parent
+	作用如下：
+	1、默认使用Java 8
+	2、源码编码方式UTF-8
+	3、dependencies里的配置可以不用填写version，version会从spring-boot-dependencies得到继承
+	4、识别过来资源过滤（Sensible resource filtering.）
+	5、识别插件的配置（Sensible plugin configuration (exec plugin, surefire, Git commit ID, shade).）
+	6、能够识别application.properties和application.yml类型的文件，同时也能支持profile-specific类型的文件（如： application-foo.properties and application-foo.yml，这个功能可以更好的配置不同生产环境下的配置文件)
+	7、maven把默认的占位符${…​}改为了@..@ -->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
