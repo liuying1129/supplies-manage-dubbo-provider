@@ -36,7 +36,7 @@
 	<bean id="suppliesManageServiceImpl" class="com.yklis.suppliesmanage.provider.service.impl.SuppliesManageServiceImpl"/>
 	
 	<!-- 用于暴露一个服务，定义服务的元信息，一个服务可以用多个协议暴露，一个服务也可以注册到多个注册中心 -->
-	<dubbo:service interface="com.yklis.suppliesmanage.inf.SuppliesManageService" ref="suppliesManageServiceImpl"/>
+	<dubbo:service interface="com.yklis.suppliesmanage.inf.SuppliesManageService" ref="suppliesManageServiceImpl" retries="0" />
 	<!-- XML配置方式end -->
 
 </beans>
