@@ -220,6 +220,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
         }
         
         //事务.具有【原子性】.即要么一起成功,要么一起失败
+        //匿名内部类,创建一个继承自TransactionCallback的匿名类的对象
         boolean b11 = (boolean) transactionTemplate.execute(new TransactionCallback<Object>() {
         	
             @Override
@@ -408,6 +409,7 @@ public class SuppliesManageServiceImpl implements SuppliesManageService {
 	                             "  select RKID,SJUnid,SJID,Name,Model,GG,SCCJ,ApprovalNo,GYS,PH,YXQ, 1,DW,RKRQ,SHR,Memo from SJ_KC where unid="+unid;
 
         //事务.具有【原子性】.即要么一起成功,要么一起失败
+        //匿名内部类,创建一个继承自TransactionCallback的匿名类的对象
         boolean b11 = (boolean) transactionTemplate.execute(new TransactionCallback<Object>() {
         	
             @Override
